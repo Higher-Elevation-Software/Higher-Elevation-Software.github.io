@@ -1,4 +1,5 @@
 site_name: Higher Elevation Software Documentation
+docs_dir: docs
 theme:
   name: material
   palette:
