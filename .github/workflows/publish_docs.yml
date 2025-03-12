@@ -1,0 +1,44 @@
+name: Publish Obsidian Vault to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout GitHub Pages Repo
+      uses: actions/checkout@v4
+      with:
+        path: github-pages-repo
+
+    - name: Checkout Obsidian Vault Repo
+      uses: actions/checkout@v4
+      with:
+        repository: Higher-Elevation-Software/ObsidianVault
+        path: obsidian-vault
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install Dependencies
+      run: |
+        pip install mkdocs mkdocs-material pymdown-extensions mkdocs-awesome-pages-plugin mkdocs-simple-hooks pyyaml
+
+    - name: Filter & Copy Notes Tagged 'publish'
+      run: |
+        mkdir -p docs
+        cd obsidian-vault
+        grep -rl "tags:.*publish" . --include=\*.md | while read -r file; do
+          # Exclude sensitive directories
+          if [[ ! "$file" =~ ^./(Private|Internal|Templates)/ ]]; then
+            mkdir -p "../pages/$file"
+            cp "$file" "../pages/$file"
+          fi
+        done
+        # copy homepage and overrides if they exist
